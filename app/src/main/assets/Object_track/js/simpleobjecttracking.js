@@ -82,7 +82,7 @@ var World = {
     createMarkers: function createMarkersFn() {
         var markerDistance = this.firetruckLength;
 
-        var frontLeftMarker = World.getMarker(0.035, -0.25);
+        var frontLeftMarker = World.getMarker(0.895, -10.65);
         World.drawables.push(frontLeftMarker);
 
         //var backRightMarker = World.getMarker(+markerDistance, -markerDistance);
@@ -91,9 +91,9 @@ var World = {
     },
 
     getMarker: function getMarkerFn(positionX, positionZ) {
-        var coneScale = 0.0055 * this.firetruckLength;
-        var positionY = 0.1 + World.firetruckCenter.y;
-        return new AR.Model("assets/piramide.wt3", {
+        var coneScale = 0.0170 * this.firetruckLength;
+        var positionY = -2.0 + World.firetruckCenter.y;
+        return new AR.Model("assets/006208032020.wt3", {
             scale: {
                 x: coneScale,
                 y: coneScale,
@@ -150,7 +150,7 @@ var World = {
     },
 
     createTracker: function createTrackerFn() {
-        this.targetCollectionResource = new AR.TargetCollectionResource("assets/test.wto", {
+        this.targetCollectionResource = new AR.TargetCollectionResource("assets/006208032020.wto", {
         });
 
         this.tracker = new AR.ObjectTracker(this.targetCollectionResource, {

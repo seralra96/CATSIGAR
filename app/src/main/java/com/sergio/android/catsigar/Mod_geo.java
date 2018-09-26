@@ -9,8 +9,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import com.google.android.gms.appindexing.Action;
-import com.google.android.gms.appindexing.AppIndex;
+
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -20,7 +19,6 @@ import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -31,11 +29,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
+
+import com.google.gson.JsonObject;
+import com.google.maps.android.clustering.ClusterManager;
 import com.google.maps.android.geojson.GeoJsonFeature;
 import com.google.maps.android.geojson.GeoJsonLayer;
 import com.google.maps.android.geojson.GeoJsonPointStyle;
-import com.google.maps.android.ui.BubbleIconFactory;
 
 /**
  * Created by SergioAlexander on 06/05/2015.
@@ -52,6 +54,7 @@ public class Mod_geo extends AppCompatActivity {
     final String mGeoJsonUrl
             = "https://ide.proadmintierra.info/geoserver/catsigar/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=catsigar:pdom2&outputFormat=application%2Fjson";
 
+    private ClusterManager mClusterManager;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -87,8 +90,6 @@ public class Mod_geo extends AppCompatActivity {
         Intent activityThatCalled = getIntent();
 
 
-
-
         try {
             if (googleMap == null) {
                 googleMap = ((MapFragment) getFragmentManager().findFragmentById(R.id.modgeo)).getMap();
@@ -104,7 +105,7 @@ public class Mod_geo extends AppCompatActivity {
             googleMap.getUiSettings().setMapToolbarEnabled(true);
             googleMap.getUiSettings().setCompassEnabled(true);
             CameraUpdate center = CameraUpdateFactory.newLatLng(new LatLng(4.626205, -74.082174));
-            CameraUpdate zoom = CameraUpdateFactory.zoomTo(18);
+            CameraUpdate zoom = CameraUpdateFactory.zoomTo(16);
             googleMap.moveCamera(center);
             googleMap.animateCamera(zoom);
             googleMap.setOnInfoWindowClickListener(MyOnInfoWindowClickListener);
@@ -127,13 +128,16 @@ public class Mod_geo extends AppCompatActivity {
         addInfoPoints();
         layer.addLayerToMap();
 */
+        mClusterManager = new ClusterManager<MyItem>(this, googleMap);
         DownloadGeoJsonFile downloadGeoJsonFile = new DownloadGeoJsonFile();
         // Download the GeoJSON file
         downloadGeoJsonFile.execute(mGeoJsonUrl);
 
+        googleMap.setOnCameraChangeListener(mClusterManager);
+
     }
 
-    GoogleMap.OnInfoWindowClickListener MyOnInfoWindowClickListener
+        GoogleMap.OnInfoWindowClickListener MyOnInfoWindowClickListener
             = new GoogleMap.OnInfoWindowClickListener(){
         @Override
         public void onInfoWindowClick(Marker marker) {
@@ -188,17 +192,41 @@ public class Mod_geo extends AppCompatActivity {
                     // Read and save each line of the stream
                     result.append(line);
                 }
-
                 // Close the stream
                 reader.close();
                 stream.close();
 
+                List<MyItem> items = new ArrayList<MyItem>();
+                JSONObject json = new JSONObject(result.toString());
+                Log.d(mLogTag, json.toString());
+
+
+                JSONArray array = json.getJSONArray("features");
+
+                for (int i = 0 ;  i < 1000; i++ ){
+                    JSONObject object = array.getJSONObject(i);
+
+                    JSONObject  geometria = object.getJSONObject("geometry");
+                    JSONArray coordenadas = geometria.getJSONArray("coordinates");
+                    String title = null;
+                    String snippet = null;
+                    double lat = coordenadas.getDouble(1);
+                    double lng = coordenadas.getDouble(0);
+
+                    title = object.getJSONObject("properties").getString("pdoclote");
+                    snippet = object.getJSONObject("properties").getString("pdotexto");
+
+                    items.add(new MyItem(lat, lng, title, snippet));
+                    Log.d(mLogTag, "añadiendo !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" + lat + " - " + lng+ " - " + title+ " - " +  snippet);
+                    mClusterManager.addItems(items);
+                }
+                Log.d(mLogTag, "termino!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                 // Convert result to JSONObject
-                return new JSONObject(result.toString());
+                //return new JSONObject(result.toString());
             } catch (IOException e) {
-                Log.e(mLogTag, "GeoJSON file could not be read");
+                Log.e(mLogTag, "GeoJSON file could not be read" + e.getMessage());
             } catch (JSONException e) {
-                Log.e(mLogTag, "GeoJSON file could not be converted to a JSONObject");
+                Log.e(mLogTag, "GeoJSON file could not be converted to a JSONObject" + e.getMessage());
             }
             return null;
         }
@@ -206,13 +234,15 @@ public class Mod_geo extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(JSONObject jsonObject) {
+            /*
             if (jsonObject != null) {
                 // Create a new GeoJsonLayer, pass in downloaded GeoJSON file as JSONObject
                 layer = new GeoJsonLayer(getMap(), jsonObject);
                 // Add the layer onto the map
                 addInfoPoints();
                 layer.addLayerToMap();
-            }
+            }*/
+
         }
 
     }

@@ -4,7 +4,7 @@ android {
     signingConfigs {
     }
     compileSdkVersion 25
-    buildToolsVersion '27.0.3'
+    buildToolsVersion '28.0.2'
     defaultConfig {
         applicationId "com.sergio.android.catsigar"
         minSdkVersion 19
@@ -46,13 +46,13 @@ allprojects {
 }
 
 dependencies {
-    implementation 'com.android.support:appcompat-v7:25.0.0'
-    implementation 'com.google.android.gms:play-services-maps:8.1.0'
+    implementation 'com.android.support:appcompat-v7:25.2.0'
+    implementation 'com.google.android.gms:play-services-maps:11.0.4'
     implementation 'com.google.code.gson:gson:2.3.1'
     implementation 'org.apache.commons:commons-lang3:3.4'
     implementation 'com.android.support:support-core-utils:25.0.0'
-    implementation 'com.google.maps.android:android-maps-utils:0.4.3'
-    implementation 'com.google.android.gms:play-services-appindexing:8.1.0'
+    implementation 'com.google.maps.android:android-maps-utils:0.5'
+    implementation 'com.google.firebase:firebase-appindexing:11.0.4'
     implementation 'com.android.support:multidex:1.0.0'
     implementation 'org.jetbrains:annotations-java5:15.0'
     implementation 'com.android.support.constraint:constraint-layout:1.1.3'

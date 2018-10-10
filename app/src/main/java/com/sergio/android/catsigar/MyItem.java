@@ -40,12 +40,12 @@ public class MyItem implements ClusterItem {
         return mPosition;
     }
 
-    //@Override
+    @Override
     public String getTitle() {
         return mTitle;
     }
 
-    //@Override
+    @Override
     public String getSnippet() {
         return mSnippet;
     }

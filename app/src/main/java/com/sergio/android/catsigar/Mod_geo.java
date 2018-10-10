@@ -1,8 +1,10 @@
 package com.sergio.android.catsigar;
 
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -15,6 +17,8 @@ import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
@@ -35,14 +39,14 @@ import java.util.Scanner;
 
 import com.google.gson.JsonObject;
 import com.google.maps.android.clustering.ClusterManager;
-import com.google.maps.android.geojson.GeoJsonFeature;
-import com.google.maps.android.geojson.GeoJsonLayer;
-import com.google.maps.android.geojson.GeoJsonPointStyle;
+import com.google.maps.android.data.geojson.GeoJsonFeature;
+import com.google.maps.android.data.geojson.GeoJsonLayer;
+import com.google.maps.android.data.geojson.GeoJsonPointStyle;
 
 /**
  * Created by SergioAlexander on 06/05/2015.
  */
-public class Mod_geo extends AppCompatActivity {
+public class Mod_geo extends AppCompatActivity implements OnMapReadyCallback {
 
     private GoogleMap googleMap;
     private GeoJsonLayer layer;
@@ -67,16 +71,16 @@ public class Mod_geo extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.hybrid:
-                googleMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
+                getMap().setMapType(GoogleMap.MAP_TYPE_HYBRID);
                 break;
             case R.id.satellite:
-                googleMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
+                getMap().setMapType(GoogleMap.MAP_TYPE_SATELLITE);
                 break;
             case R.id.maps:
-                googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+                getMap().setMapType(GoogleMap.MAP_TYPE_NORMAL);
                 break;
             case R.id.terrain:
-                googleMap.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
+                getMap().setMapType(GoogleMap.MAP_TYPE_TERRAIN);
                 break;
         }
 
@@ -88,27 +92,43 @@ public class Mod_geo extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.mod_geo);
         Intent activityThatCalled = getIntent();
+        setUpMap();
+    }
 
 
+    private void setUpMap() {
+
+        ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.modgeo)).getMapAsync(this);
+    }
+
+    protected void startClustering(){
         try {
-            if (googleMap == null) {
-                googleMap = ((MapFragment) getFragmentManager().findFragmentById(R.id.modgeo)).getMap();
-            }
 
-            googleMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
-            googleMap.setMyLocationEnabled(true);
-            googleMap.setTrafficEnabled(true);
-            googleMap.setIndoorEnabled(true);
-            googleMap.setBuildingsEnabled(true);
-            googleMap.getUiSettings().setZoomControlsEnabled(true);
-            googleMap.getUiSettings().setAllGesturesEnabled(true);
-            googleMap.getUiSettings().setMapToolbarEnabled(true);
-            googleMap.getUiSettings().setCompassEnabled(true);
+
+            getMap().setMapType(GoogleMap.MAP_TYPE_HYBRID);
+            if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return;
+            }
+            getMap().setMyLocationEnabled(true);
+            getMap().setTrafficEnabled(true);
+            getMap().setIndoorEnabled(true);
+            getMap().setBuildingsEnabled(true);
+            getMap().getUiSettings().setZoomControlsEnabled(true);
+            getMap().getUiSettings().setAllGesturesEnabled(true);
+            getMap().getUiSettings().setMapToolbarEnabled(true);
+            getMap().getUiSettings().setCompassEnabled(true);
             CameraUpdate center = CameraUpdateFactory.newLatLng(new LatLng(4.626205, -74.082174));
             CameraUpdate zoom = CameraUpdateFactory.zoomTo(16);
-            googleMap.moveCamera(center);
-            googleMap.animateCamera(zoom);
-            googleMap.setOnInfoWindowClickListener(MyOnInfoWindowClickListener);
+            getMap().moveCamera(center);
+            getMap().animateCamera(zoom);
+            getMap().setOnInfoWindowClickListener(MyOnInfoWindowClickListener);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -128,12 +148,14 @@ public class Mod_geo extends AppCompatActivity {
         addInfoPoints();
         layer.addLayerToMap();
 */
-        mClusterManager = new ClusterManager<MyItem>(this, googleMap);
+
+
+        mClusterManager = new ClusterManager<MyItem>(this,  getMap());
         DownloadGeoJsonFile downloadGeoJsonFile = new DownloadGeoJsonFile();
         // Download the GeoJSON file
         downloadGeoJsonFile.execute(mGeoJsonUrl);
 
-        googleMap.setOnCameraChangeListener(mClusterManager);
+        getMap().setOnCameraIdleListener(mClusterManager);
 
     }
 
@@ -174,6 +196,15 @@ public class Mod_geo extends AppCompatActivity {
                 feature.setPointStyle(pointStyle);
             }
         }
+    }
+
+    @Override
+    public void onMapReady(GoogleMap map) {
+        if (googleMap != null) {
+            return;
+        }
+        googleMap = map;
+        startClustering();
     }
 
     private class DownloadGeoJsonFile extends AsyncTask<String, Void, JSONObject> {

@@ -106,6 +106,7 @@ var World = {
                             }
             }
         }else{
+            alert("La construccion "+GET.codpre+ " no existe, pero puedes ver información de la pirámide de muestra");
             console.log("La construccion "+GET.codpre+ " no existe y se mostrará la pirámide");
             construccion = World.construcciones[0];
             construccion.drawable = World.getMarker(construccion.x, construccion.y, construccion.z, construccion.url, construccion.sc);

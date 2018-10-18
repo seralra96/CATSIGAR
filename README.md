@@ -2,7 +2,7 @@
 Proyecto que combina realidad aumentada con información catastral
 
 
-Para desplegar el proyecto en Android Studio
+Para desplegar el proyecto en Android Studio:
 ## Clonar el repositorio
 
 ```bash

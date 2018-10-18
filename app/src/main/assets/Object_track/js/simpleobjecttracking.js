@@ -1,7 +1,29 @@
 var World = {
     loaded: false,
     drawables: [],
+    construcciones:[
+        {
+            id: "otros",
+            x: -0.05,
+            y: 0,
+            z: -0.14,
+            sc: 0.00825,
+            url: "assets/piramide.wt3",
+            wtourl: "assets/piramide.wto",
+            drawable: null
+        },
+        {
+            id: "006208032020",
+            x: 0.895,
+            y: -2.0,
+            z: -10.65,
+            sc: 0.0170,
+            url: "assets/006208032020.wt3",
+            wtourl: "assets/006208032020.wto",
+            drawable: null
+        }
 
+    ],
     edRotation: {
         x: 0,
         y: 0,
@@ -18,7 +40,7 @@ var World = {
     init: function initFn() {
         World.createCones();
         World.createMarkers();
-        World.createTracker();
+        //World.createTracker();
     },
 
 
@@ -60,11 +82,43 @@ var World = {
 
 
     createMarkers: function createMarkersFn() {
+
+        function search(idLote, array){
+            for (var i=0; i < array.length; i++){
+                if (array[i].id === idLote){
+                    return true;
+                }
+                }
+            return false;
+            }
+
+        console.log("prueba de mensaje recibido codigo predial "+ GET.codpre);
+        console.log(search(GET.codpre, World.construcciones));
+        if (search(GET.codpre, World.construcciones)){
+            console.log("La construccion "+GET.codpre+ " existe y se dibujará");
+              for (var i=0; i < World.construcciones.length; i++){
+                            if (World.construcciones[i].id === GET.codpre){
+                                construccion = World.construcciones[i];
+                                construccion.drawable = World.getMarker(construccion.x, construccion.y, construccion.z, construccion.url, construccion.sc);
+                                World.drawables.push(construccion.drawable);
+                                World.createTracker(construccion.wtourl);
+                                break;
+                            }
+            }
+        }else{
+            console.log("La construccion "+GET.codpre+ " no existe y se mostrará la pirámide");
+            construccion = World.construcciones[0];
+            construccion.drawable = World.getMarker(construccion.x, construccion.y, construccion.z, construccion.url, construccion.sc);
+            World.drawables.push(construccion.drawable);
+            World.createTracker(construccion.wtourl);
+        }
+
+/*
         var markerDistance = this.edLength;
         console.log("prueba de mensaje recibido codigo predial "+ GET.codpre);
         var ed006208032020 = World.getMarker(0.895, -2.0, -10.65, "assets/006208032020.wt3", 0.0170);
         World.drawables.push(ed006208032020);
-
+*/
         //var backRightMarker = World.getMarker(+markerDistance, -markerDistance);
         //World.drawables.push(backRightMarker);
 
@@ -91,8 +145,8 @@ var World = {
         });
     },
 
-    createTracker: function createTrackerFn() {
-        this.targetCollectionResource = new AR.TargetCollectionResource("assets/006208032020.wto", {
+    createTracker: function createTrackerFn(url) {
+        this.targetCollectionResource = new AR.TargetCollectionResource(url, {
         });
 
         this.tracker = new AR.ObjectTracker(this.targetCollectionResource, {

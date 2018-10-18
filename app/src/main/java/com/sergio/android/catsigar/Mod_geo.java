@@ -1,5 +1,6 @@
 package com.sergio.android.catsigar;
 
+import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
@@ -46,7 +47,11 @@ import com.google.maps.android.data.geojson.GeoJsonPointStyle;
 /**
  * Created by SergioAlexander on 06/05/2015.
  */
-public class Mod_geo extends AppCompatActivity implements OnMapReadyCallback {
+public class Mod_geo extends AppCompatActivity implements
+        GoogleMap.OnCameraMoveListener,
+        GoogleMap.OnCameraMoveCanceledListener,
+        GoogleMap.OnCameraIdleListener,
+        OnMapReadyCallback {
 
     private GoogleMap googleMap;
     private GeoJsonLayer layer;
@@ -56,8 +61,8 @@ public class Mod_geo extends AppCompatActivity implements OnMapReadyCallback {
      */
     private GoogleApiClient client;
     final String mGeoJsonUrl
-            = "https://ide.proadmintierra.info/geoserver/catsigar/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=catsigar:pdom2&outputFormat=application%2Fjson";
-
+            //= "https://ide.proadmintierra.info/geoserver/catsigar/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=catsigar:pdom2&outputFormat=application%2Fjson";
+            = "https://ide.proadmintierra.info/geoserver/catsigar/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=catsigar:pdom2&srsName=EPSG:4326&bbox=4.633612177399431,-74.1091826185584,4.662669561198145,-74.09295290708542,urn:ogc:def:crs:EPSG:4326&outputFormat=application%2Fjson";
     private ClusterManager mClusterManager;
 
     @Override
@@ -87,12 +92,35 @@ public class Mod_geo extends AppCompatActivity implements OnMapReadyCallback {
         return super.onOptionsItemSelected(item);
     }
 
+    protected void verifyPermissions() {
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+
+                setUpMap();
+        }
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION) ||
+                    ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_COARSE_LOCATION) ||
+                    ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA) ||
+                    ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+
+            } else {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                setUpMap();
+            }
+
+            return;
+        }
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.mod_geo);
         Intent activityThatCalled = getIntent();
-        setUpMap();
+        verifyPermissions();
+
     }
 
 
@@ -101,12 +129,13 @@ public class Mod_geo extends AppCompatActivity implements OnMapReadyCallback {
         ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.modgeo)).getMapAsync(this);
     }
 
-    protected void startClustering(){
+    protected void startClustering() {
         try {
 
 
             getMap().setMapType(GoogleMap.MAP_TYPE_HYBRID);
-            if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 // TODO: Consider calling
                 //    ActivityCompat#requestPermissions
                 // here to request the missing permissions, and then overriding
@@ -124,11 +153,12 @@ public class Mod_geo extends AppCompatActivity implements OnMapReadyCallback {
             getMap().getUiSettings().setAllGesturesEnabled(true);
             getMap().getUiSettings().setMapToolbarEnabled(true);
             getMap().getUiSettings().setCompassEnabled(true);
-            CameraUpdate center = CameraUpdateFactory.newLatLng(new LatLng(4.626205, -74.082174));
-            CameraUpdate zoom = CameraUpdateFactory.zoomTo(16);
+            CameraUpdate center = CameraUpdateFactory.newLatLng(new LatLng(4.635287, -74.096603));
+            CameraUpdate zoom = CameraUpdateFactory.zoomTo(14);
             getMap().moveCamera(center);
             getMap().animateCamera(zoom);
             getMap().setOnInfoWindowClickListener(MyOnInfoWindowClickListener);
+
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -204,8 +234,42 @@ public class Mod_geo extends AppCompatActivity implements OnMapReadyCallback {
             return;
         }
         googleMap = map;
+
+        googleMap.setOnCameraMoveListener(this);
+        googleMap.setOnCameraMoveCanceledListener(this);
+        googleMap.setOnCameraIdleListener(this);
         startClustering();
     }
+
+
+    @Override
+    public void onCameraMove() {
+        double lat = getMap().getCameraPosition().target.latitude;
+        double lng = getMap().getCameraPosition().target.longitude;
+
+        Log.d("Tag", "lat: "+lat+" lng: "+lng);
+        Log.d("Tag", getMap().getProjection().getVisibleRegion().latLngBounds.toString());
+    }
+
+    @Override
+    public void onCameraMoveCanceled() {
+        double lat = getMap().getCameraPosition().target.latitude;
+        double lng = getMap().getCameraPosition().target.longitude;
+
+        Log.d("Tag", "END:  lat: "+lat+" lng: "+lng);
+        Log.d("Tag", "END:   "+getMap().getProjection().getVisibleRegion().latLngBounds.toString());
+    }
+
+    @Override
+    public void onCameraIdle() {
+        double lat = getMap().getCameraPosition().target.latitude;
+        double lng = getMap().getCameraPosition().target.longitude;
+
+        Log.d("Tag", "IDLEEND:  lat: "+lat+" lng: "+lng);
+        Log.d("Tag", "IDLEEND:   "+getMap().getProjection().getVisibleRegion().latLngBounds.toString());
+
+    }
+
 
     private class DownloadGeoJsonFile extends AsyncTask<String, Void, JSONObject> {
         final String mLogTag = "GeoJsonDemo";
@@ -234,7 +298,7 @@ public class Mod_geo extends AppCompatActivity implements OnMapReadyCallback {
 
                 JSONArray array = json.getJSONArray("features");
 
-                for (int i = 0 ;  i < 1000; i++ ){
+                for (int i = 0 ;  i < 500; i++ ){
                     JSONObject object = array.getJSONObject(i);
 
                     JSONObject  geometria = object.getJSONObject("geometry");
@@ -244,8 +308,8 @@ public class Mod_geo extends AppCompatActivity implements OnMapReadyCallback {
                     double lat = coordenadas.getDouble(1);
                     double lng = coordenadas.getDouble(0);
 
-                    title = object.getJSONObject("properties").getString("pdoclote");
-                    snippet = object.getJSONObject("properties").getString("pdotexto");
+                    title = object.getJSONObject("properties").getString("pdotexto");
+                    snippet = object.getJSONObject("properties").getString("pdoclote");
 
                     items.add(new MyItem(lat, lng, title, snippet));
                     Log.d(mLogTag, "añadiendo !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" + lat + " - " + lng+ " - " + title+ " - " +  snippet);

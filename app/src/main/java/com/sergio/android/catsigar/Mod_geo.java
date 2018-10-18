@@ -1,26 +1,29 @@
 package com.sergio.android.catsigar;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import com.google.android.gms.appindexing.Action;
-import com.google.android.gms.appindexing.AppIndex;
+
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -31,16 +34,24 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
-import com.google.maps.android.geojson.GeoJsonFeature;
-import com.google.maps.android.geojson.GeoJsonLayer;
-import com.google.maps.android.geojson.GeoJsonPointStyle;
-import com.google.maps.android.ui.BubbleIconFactory;
+
+import com.google.gson.JsonObject;
+import com.google.maps.android.clustering.ClusterManager;
+import com.google.maps.android.data.geojson.GeoJsonFeature;
+import com.google.maps.android.data.geojson.GeoJsonLayer;
+import com.google.maps.android.data.geojson.GeoJsonPointStyle;
 
 /**
  * Created by SergioAlexander on 06/05/2015.
  */
-public class Mod_geo extends AppCompatActivity {
+public class Mod_geo extends AppCompatActivity implements
+        GoogleMap.OnCameraMoveListener,
+        GoogleMap.OnCameraMoveCanceledListener,
+        GoogleMap.OnCameraIdleListener,
+        OnMapReadyCallback {
 
     private GoogleMap googleMap;
     private GeoJsonLayer layer;
@@ -50,8 +61,9 @@ public class Mod_geo extends AppCompatActivity {
      */
     private GoogleApiClient client;
     final String mGeoJsonUrl
-            = "https://ide.proadmintierra.info/geoserver/catsigar/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=catsigar:pdom2&outputFormat=application%2Fjson";
-
+            //= "https://ide.proadmintierra.info/geoserver/catsigar/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=catsigar:pdom2&outputFormat=application%2Fjson";
+            = "https://ide.proadmintierra.info/geoserver/catsigar/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=catsigar:pdom2&srsName=EPSG:4326&bbox=4.633612177399431,-74.1091826185584,4.662669561198145,-74.09295290708542,urn:ogc:def:crs:EPSG:4326&outputFormat=application%2Fjson";
+    private ClusterManager mClusterManager;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -64,50 +76,89 @@ public class Mod_geo extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.hybrid:
-                googleMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
+                getMap().setMapType(GoogleMap.MAP_TYPE_HYBRID);
                 break;
             case R.id.satellite:
-                googleMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
+                getMap().setMapType(GoogleMap.MAP_TYPE_SATELLITE);
                 break;
             case R.id.maps:
-                googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+                getMap().setMapType(GoogleMap.MAP_TYPE_NORMAL);
                 break;
             case R.id.terrain:
-                googleMap.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
+                getMap().setMapType(GoogleMap.MAP_TYPE_TERRAIN);
                 break;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
+    protected void verifyPermissions() {
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+
+                setUpMap();
+        }
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION) ||
+                    ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_COARSE_LOCATION) ||
+                    ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA) ||
+                    ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+
+            } else {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                setUpMap();
+            }
+
+            return;
+        }
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.mod_geo);
         Intent activityThatCalled = getIntent();
+        verifyPermissions();
+
+    }
 
 
+    private void setUpMap() {
 
+        ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.modgeo)).getMapAsync(this);
+    }
 
+    protected void startClustering() {
         try {
-            if (googleMap == null) {
-                googleMap = ((MapFragment) getFragmentManager().findFragmentById(R.id.modgeo)).getMap();
-            }
 
-            googleMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
-            googleMap.setMyLocationEnabled(true);
-            googleMap.setTrafficEnabled(true);
-            googleMap.setIndoorEnabled(true);
-            googleMap.setBuildingsEnabled(true);
-            googleMap.getUiSettings().setZoomControlsEnabled(true);
-            googleMap.getUiSettings().setAllGesturesEnabled(true);
-            googleMap.getUiSettings().setMapToolbarEnabled(true);
-            googleMap.getUiSettings().setCompassEnabled(true);
-            CameraUpdate center = CameraUpdateFactory.newLatLng(new LatLng(4.626205, -74.082174));
-            CameraUpdate zoom = CameraUpdateFactory.zoomTo(18);
-            googleMap.moveCamera(center);
-            googleMap.animateCamera(zoom);
-            googleMap.setOnInfoWindowClickListener(MyOnInfoWindowClickListener);
+
+            getMap().setMapType(GoogleMap.MAP_TYPE_HYBRID);
+
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return;
+            }
+            getMap().setMyLocationEnabled(true);
+            getMap().setTrafficEnabled(true);
+            getMap().setIndoorEnabled(true);
+            getMap().setBuildingsEnabled(true);
+            getMap().getUiSettings().setZoomControlsEnabled(true);
+            getMap().getUiSettings().setAllGesturesEnabled(true);
+            getMap().getUiSettings().setMapToolbarEnabled(true);
+            getMap().getUiSettings().setCompassEnabled(true);
+            CameraUpdate center = CameraUpdateFactory.newLatLng(new LatLng(4.635287, -74.096603));
+            CameraUpdate zoom = CameraUpdateFactory.zoomTo(14);
+            getMap().moveCamera(center);
+            getMap().animateCamera(zoom);
+            getMap().setOnInfoWindowClickListener(MyOnInfoWindowClickListener);
+
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -127,13 +178,18 @@ public class Mod_geo extends AppCompatActivity {
         addInfoPoints();
         layer.addLayerToMap();
 */
+
+
+        mClusterManager = new ClusterManager<MyItem>(this,  getMap());
         DownloadGeoJsonFile downloadGeoJsonFile = new DownloadGeoJsonFile();
         // Download the GeoJSON file
         downloadGeoJsonFile.execute(mGeoJsonUrl);
 
+        getMap().setOnCameraIdleListener(mClusterManager);
+
     }
 
-    GoogleMap.OnInfoWindowClickListener MyOnInfoWindowClickListener
+        GoogleMap.OnInfoWindowClickListener MyOnInfoWindowClickListener
             = new GoogleMap.OnInfoWindowClickListener(){
         @Override
         public void onInfoWindowClick(Marker marker) {
@@ -172,6 +228,49 @@ public class Mod_geo extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onMapReady(GoogleMap map) {
+        if (googleMap != null) {
+            return;
+        }
+        googleMap = map;
+
+        googleMap.setOnCameraMoveListener(this);
+        googleMap.setOnCameraMoveCanceledListener(this);
+        googleMap.setOnCameraIdleListener(this);
+        startClustering();
+    }
+
+
+    @Override
+    public void onCameraMove() {
+        double lat = getMap().getCameraPosition().target.latitude;
+        double lng = getMap().getCameraPosition().target.longitude;
+
+        Log.d("Tag", "lat: "+lat+" lng: "+lng);
+        Log.d("Tag", getMap().getProjection().getVisibleRegion().latLngBounds.toString());
+    }
+
+    @Override
+    public void onCameraMoveCanceled() {
+        double lat = getMap().getCameraPosition().target.latitude;
+        double lng = getMap().getCameraPosition().target.longitude;
+
+        Log.d("Tag", "END:  lat: "+lat+" lng: "+lng);
+        Log.d("Tag", "END:   "+getMap().getProjection().getVisibleRegion().latLngBounds.toString());
+    }
+
+    @Override
+    public void onCameraIdle() {
+        double lat = getMap().getCameraPosition().target.latitude;
+        double lng = getMap().getCameraPosition().target.longitude;
+
+        Log.d("Tag", "IDLEEND:  lat: "+lat+" lng: "+lng);
+        Log.d("Tag", "IDLEEND:   "+getMap().getProjection().getVisibleRegion().latLngBounds.toString());
+
+    }
+
+
     private class DownloadGeoJsonFile extends AsyncTask<String, Void, JSONObject> {
         final String mLogTag = "GeoJsonDemo";
         @Override
@@ -188,17 +287,41 @@ public class Mod_geo extends AppCompatActivity {
                     // Read and save each line of the stream
                     result.append(line);
                 }
-
                 // Close the stream
                 reader.close();
                 stream.close();
 
+                List<MyItem> items = new ArrayList<MyItem>();
+                JSONObject json = new JSONObject(result.toString());
+                Log.d(mLogTag, json.toString());
+
+
+                JSONArray array = json.getJSONArray("features");
+
+                for (int i = 0 ;  i < 500; i++ ){
+                    JSONObject object = array.getJSONObject(i);
+
+                    JSONObject  geometria = object.getJSONObject("geometry");
+                    JSONArray coordenadas = geometria.getJSONArray("coordinates");
+                    String title = null;
+                    String snippet = null;
+                    double lat = coordenadas.getDouble(1);
+                    double lng = coordenadas.getDouble(0);
+
+                    title = object.getJSONObject("properties").getString("pdotexto");
+                    snippet = object.getJSONObject("properties").getString("pdoclote");
+
+                    items.add(new MyItem(lat, lng, title, snippet));
+                    Log.d(mLogTag, "añadiendo !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" + lat + " - " + lng+ " - " + title+ " - " +  snippet);
+                    mClusterManager.addItems(items);
+                }
+                Log.d(mLogTag, "termino!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                 // Convert result to JSONObject
-                return new JSONObject(result.toString());
+                //return new JSONObject(result.toString());
             } catch (IOException e) {
-                Log.e(mLogTag, "GeoJSON file could not be read");
+                Log.e(mLogTag, "GeoJSON file could not be read" + e.getMessage());
             } catch (JSONException e) {
-                Log.e(mLogTag, "GeoJSON file could not be converted to a JSONObject");
+                Log.e(mLogTag, "GeoJSON file could not be converted to a JSONObject" + e.getMessage());
             }
             return null;
         }
@@ -206,13 +329,15 @@ public class Mod_geo extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(JSONObject jsonObject) {
+            /*
             if (jsonObject != null) {
                 // Create a new GeoJsonLayer, pass in downloaded GeoJSON file as JSONObject
                 layer = new GeoJsonLayer(getMap(), jsonObject);
                 // Add the layer onto the map
                 addInfoPoints();
                 layer.addLayerToMap();
-            }
+            }*/
+
         }
 
     }

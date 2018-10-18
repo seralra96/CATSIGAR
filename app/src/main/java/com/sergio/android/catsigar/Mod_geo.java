@@ -182,7 +182,7 @@ public class Mod_geo extends AppCompatActivity implements
 
                     Toast.LENGTH_LONG).show();
             String idLote_int = marker.getSnippet();
-            Intent intent = new Intent(Mod_geo.this,Info_pred.class);
+            Intent intent = new Intent(Mod_geo.this,Mod_ar.class);
             intent.putExtra("idLote_int",idLote_int);
             startActivity(intent);
         }

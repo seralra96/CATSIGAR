@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity;
 
 import com.wikitude.architect.ArchitectStartupConfiguration;
 import com.wikitude.architect.ArchitectView;
+import com.wikitude.common.camera.CameraSettings;
 
 public class Mod_ar extends AppCompatActivity {
 
@@ -22,6 +23,8 @@ public class Mod_ar extends AppCompatActivity {
 
         this.architectView = (ArchitectView)this.findViewById( R.id.architectView );
         final ArchitectStartupConfiguration config = new ArchitectStartupConfiguration();
+        config.setCameraResolution(CameraSettings.CameraResolution.AUTO);
+        config.setCamera2Enabled(true);
         config.setLicenseKey(getString(R.string.wikitude_license_key));
         this.architectView.onCreate( config );
     }

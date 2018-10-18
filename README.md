@@ -1,5 +1,6 @@
 # CATSIGAR
 Proyecto que combina realidad aumentada con información catastral
+![Logo](https://github.com/seralra96/CATSIGAR/raw/10f27f94facf47526e8fc5d6f27eb24ed63963c0/app/src/main/res/drawable/web_hi_res_512.png)
 
 
 Para desplegar el proyecto en Android Studio:

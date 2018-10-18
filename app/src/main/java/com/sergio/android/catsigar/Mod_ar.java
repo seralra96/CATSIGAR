@@ -10,11 +10,12 @@ import com.wikitude.architect.ArchitectView;
 public class Mod_ar extends AppCompatActivity {
 
     private ArchitectView architectView;
-
+    String idLote;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Intent intent = getIntent();
+
         setContentView(R.layout.mod_ar);
 
 
@@ -28,10 +29,11 @@ public class Mod_ar extends AppCompatActivity {
     @Override
     protected void onPostCreate (Bundle savedInstaceState) {
         super.onPostCreate(savedInstaceState);
-
         architectView.onPostCreate();
+        String idLote = getIntent().getStringExtra("idLote_int");
+
         try {
-            this.architectView.load("file:///android_asset/Object_track/index.html");
+            this.architectView.load("file:///android_asset/Object_track/index.html?"+"codpre="+idLote);
         } catch (Exception e){}
 
     }

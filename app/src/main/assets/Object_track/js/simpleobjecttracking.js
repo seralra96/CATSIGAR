@@ -2,48 +2,28 @@ var World = {
     loaded: false,
     drawables: [],
 
-    firetruckRotation: {
+    edRotation: {
         x: 0,
         y: 0,
         z: 0
     },
-    firetruckCenter: {
+    edCenter: {
         x: 0,
         y: -0.14,
         z: 0
     },
-    firetruckLength: 1.65,
-    firetruckHeight: 1.48,
+    edength: 1.65,
+    edHeight: 1.48,
 
     init: function initFn() {
-        World.createOccluder();
         World.createCones();
         World.createMarkers();
         World.createTracker();
-        World.createLabel();
-        World.createImage();
     },
 
-    createOccluder: function createOccluderFn() {
-        var occluderScale = 0.0035 * this.firetruckLength;
-
-        this.firetruckOccluder = new AR.Occluder("assets/firetruck_occluder.wt3", {
-            onLoaded: this.loadingStep,
-            scale: {
-                x: occluderScale,
-                y: occluderScale,
-                z: occluderScale
-            },
-            translate: this.firetruckCenter,
-            rotate: {
-                x: 180
-            }
-        });
-        //World.drawables.push(this.firetruckOccluder);
-    },
 
     createCones: function createConesFn() {
-        var coneDistance = this.firetruckLength * 0.7;
+        var coneDistance = this.edLength * 0.7;
 
         var frontLeftCone = World.getCone(-coneDistance, +coneDistance);
         World.drawables.push(frontLeftCone);
@@ -59,7 +39,7 @@ var World = {
     },
 
     getCone: function getConeFn(positionX, positionZ) {
-        var coneScale = 0.05 * this.firetruckLength;
+        var coneScale = 0.05 * this.edLength;
 
         return new AR.Model("assets/traffic_cone.wt3", {
             scale: {
@@ -69,7 +49,7 @@ var World = {
             },
             translate: {
                 x: positionX,
-                y: World.firetruckCenter.y,
+                y: World.edCenter.y,
                 z: positionZ
             },
             rotate: {
@@ -80,20 +60,21 @@ var World = {
 
 
     createMarkers: function createMarkersFn() {
-        var markerDistance = this.firetruckLength;
-
-        var frontLeftMarker = World.getMarker(0.895, -10.65);
-        World.drawables.push(frontLeftMarker);
+        var markerDistance = this.edLength;
+        console.log("prueba de mensaje recibido codigo predial "+ GET.codpre);
+        var ed006208032020 = World.getMarker(0.895, -2.0, -10.65, "assets/006208032020.wt3", 0.0170);
+        World.drawables.push(ed006208032020);
 
         //var backRightMarker = World.getMarker(+markerDistance, -markerDistance);
         //World.drawables.push(backRightMarker);
 
     },
 
-    getMarker: function getMarkerFn(positionX, positionZ) {
-        var coneScale = 0.0170 * this.firetruckLength;
-        var positionY = -2.0 + World.firetruckCenter.y;
-        return new AR.Model("assets/006208032020.wt3", {
+    getMarker: function getMarkerFn(positionX, positionY, positionZ, model, coneScale) {
+        //var coneScale = 0.0170 * this.firetruckLength;
+        //var positionY = -2.0 + World.firetruckCenter.y;
+        return new AR.Model(model, {
+            onLoaded: this.loadingStep,
             scale: {
                 x: coneScale,
                 y: coneScale,
@@ -108,45 +89,6 @@ var World = {
                 x: -90
             }
         });
-    },
-
-    createLabel: function createLabelFn() {
-        var texto = new AR.Label("HOLA SOY UNA PIRAMIDE", 10, {
-          translate : { x: 0,
-                        y: 1.26,
-                        z: 0},
-          rotate : { z: 0 },
-          zOrder: 2,
-          onClick : function() {
-            label.text += "HOLA SOY UNA PIRAMIDE al darle click"
-          },
-          verticalAnchor : AR.CONST.VERTICAL_ANCHOR.MIDDLE,
-          horizontalAnchor : AR.CONST.HORIZONTAL_ANCHOR.MIDDLE,
-          opacity : 1
-        });
-        console.log("Label creado");
-        console.log(World.drawables);
-        World.drawables.push(texto);
-        console.log("Label llevado a drawables");
-        console.log(World.drawables);
-    },
-
-    createImage: function createImageFn(){
-        var imgOne = new AR.ImageResource("assets/impresora.jpg");
-        var imagen = new AR.ImageDrawable(imgOne, 10, {
-           translate : { x: -0.845,
-                         y: 1.26,
-                         z: 0},
-          rotate : { z: 0 },
-          zOrder: 1,
-          onClick : function() {
-              // 'this' represents the ImageDrawable
-              this.rotate.z += 10;
-            }
-        });
-        World.drawables.push(imagen);
-        console.log("Imagen llevada drawables");
-        console.log(World.drawables);
     },
 
     createTracker: function createTrackerFn() {
@@ -187,7 +129,7 @@ var World = {
     },
 
     removeLoadingBar: function removeLoadingBarFn() {
-        if (!World.loaded && World.firetruckOccluder.isLoaded()) {
+        if (!World.loaded) {
             var e = document.getElementById('loadingMessage');
             e.parentElement.removeChild(e);
             World.loaded = true;
@@ -195,13 +137,9 @@ var World = {
     },
 
     loadingStep: function loadingStepFn() {
-        if (World.firetruckOccluder.isLoaded()) {
-            var cssDivLeft = " style='display: table-cell;vertical-align: middle; text-align: right; width: 50%; padding-right: 15px;'";
-            var cssDivRight = " style='display: table-cell;vertical-align: middle; text-align: left;'";
+            var cssDivCenter = " style='display: table-cell;vertical-align: middle; text-align: center;'";
             document.getElementById('loadingMessage').innerHTML =
-                "<div" + cssDivLeft + ">Scan Piramid:</div>" +
-                "<div" + cssDivRight + "><img src='assets/firetruck_image.png'></img></div>";
-        }
+                "<div" + cssDivCenter + ">Escanea la Construcción:</div>" ;
     }
 };
 

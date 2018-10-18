@@ -167,7 +167,7 @@ public class Mod_geo extends AppCompatActivity implements
         downloadGeoJsonFile.execute(mGeoJsonUrl);
 
         getMap().setOnCameraIdleListener(mClusterManager);
-        Toast.makeText(getApplicationContext(), "Descarga finalizada, mueve un poco el mapa para que aparezcan los puntos", Toast.LENGTH_LONG).show();
+        Toast.makeText(getApplicationContext(), "Descarga finalizada, mueve un poco el mapa para que aparezcan las placas", Toast.LENGTH_LONG).show();
     }
 
         GoogleMap.OnInfoWindowClickListener MyOnInfoWindowClickListener

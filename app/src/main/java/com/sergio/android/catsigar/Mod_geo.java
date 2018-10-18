@@ -10,6 +10,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 
@@ -55,12 +57,19 @@ public class Mod_geo extends AppCompatActivity implements
 
     private GoogleMap googleMap;
     private GeoJsonLayer layer;
+    private double latw;
+    private double lngw;
+    private double late;
+    private double lnge;
+
+
+    Button btn_wfs;
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
      */
     private GoogleApiClient client;
-    final String mGeoJsonUrl
+    private String mGeoJsonUrl
             //= "https://ide.proadmintierra.info/geoserver/catsigar/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=catsigar:pdom2&outputFormat=application%2Fjson";
             = "https://ide.proadmintierra.info/geoserver/catsigar/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=catsigar:pdom2&srsName=EPSG:4326&bbox=4.633612177399431,-74.1091826185584,4.662669561198145,-74.09295290708542,urn:ogc:def:crs:EPSG:4326&outputFormat=application%2Fjson";
     private ClusterManager mClusterManager;
@@ -108,6 +117,7 @@ public class Mod_geo extends AppCompatActivity implements
             } else {
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
                 setUpMap();
+
             }
 
             return;
@@ -119,7 +129,25 @@ public class Mod_geo extends AppCompatActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.mod_geo);
         Intent activityThatCalled = getIntent();
+        btn_wfs = (Button) findViewById(R.id.wfsget_btn);
         verifyPermissions();
+
+
+        btn_wfs.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                latw = getMap().getProjection().getVisibleRegion().latLngBounds.southwest.latitude;
+                lngw = getMap().getProjection().getVisibleRegion().latLngBounds.southwest.longitude;
+                late = getMap().getProjection().getVisibleRegion().latLngBounds.northeast.latitude;
+                lnge = getMap().getProjection().getVisibleRegion().latLngBounds.northeast.longitude;
+
+                Log.d("Tag", latw +","+ lngw );
+                mGeoJsonUrl = "https://ide.proadmintierra.info/geoserver/catsigar/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=catsigar:pdom2&srsName=EPSG:4326&bbox="+latw +","+ lngw  +","+ late  +","+ lnge+ ",urn:ogc:def:crs:EPSG:4326&outputFormat=application%2Fjson";
+                Toast.makeText(getApplicationContext(), mGeoJsonUrl, Toast.LENGTH_LONG).show();
+                startClustering(mGeoJsonUrl);
+            }
+        });
 
     }
 
@@ -129,64 +157,17 @@ public class Mod_geo extends AppCompatActivity implements
         ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.modgeo)).getMapAsync(this);
     }
 
-    protected void startClustering() {
-        try {
+    protected void startClustering(String mGeoJsonUrl) {
 
-
-            getMap().setMapType(GoogleMap.MAP_TYPE_HYBRID);
-
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
-                return;
-            }
-            getMap().setMyLocationEnabled(true);
-            getMap().setTrafficEnabled(true);
-            getMap().setIndoorEnabled(true);
-            getMap().setBuildingsEnabled(true);
-            getMap().getUiSettings().setZoomControlsEnabled(true);
-            getMap().getUiSettings().setAllGesturesEnabled(true);
-            getMap().getUiSettings().setMapToolbarEnabled(true);
-            getMap().getUiSettings().setCompassEnabled(true);
-            CameraUpdate center = CameraUpdateFactory.newLatLng(new LatLng(4.635287, -74.096603));
-            CameraUpdate zoom = CameraUpdateFactory.zoomTo(14);
-            getMap().moveCamera(center);
-            getMap().animateCamera(zoom);
-            getMap().setOnInfoWindowClickListener(MyOnInfoWindowClickListener);
-
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-/*
-        try {
-            layer = new GeoJsonLayer(getMap(), R.raw.pdom, getApplicationContext());
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-
-
-        addInfoPoints();
-        layer.addLayerToMap();
-*/
-
-
+        Toast.makeText(getApplicationContext(), "Arranca el Clustering", Toast.LENGTH_LONG).show();
         mClusterManager = new ClusterManager<MyItem>(this,  getMap());
         DownloadGeoJsonFile downloadGeoJsonFile = new DownloadGeoJsonFile();
         // Download the GeoJSON file
+
         downloadGeoJsonFile.execute(mGeoJsonUrl);
 
         getMap().setOnCameraIdleListener(mClusterManager);
-
+        Toast.makeText(getApplicationContext(), "Descarga finalizada, mueve un poco el mapa para que aparezcan los puntos", Toast.LENGTH_LONG).show();
     }
 
         GoogleMap.OnInfoWindowClickListener MyOnInfoWindowClickListener
@@ -206,7 +187,6 @@ public class Mod_geo extends AppCompatActivity implements
             startActivity(intent);
         }
     };
-
 
     private void addInfoPoints(){
         //Iteración sobre cada uno de los features del layer
@@ -234,11 +214,44 @@ public class Mod_geo extends AppCompatActivity implements
             return;
         }
         googleMap = map;
+        try {
+
+
+            getMap().setMapType(GoogleMap.MAP_TYPE_HYBRID);
+
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return;
+            }
+            getMap().setMyLocationEnabled(true);
+            getMap().setTrafficEnabled(true);
+            getMap().setIndoorEnabled(true);
+            getMap().setBuildingsEnabled(true);
+            getMap().getUiSettings().setZoomControlsEnabled(true);
+            getMap().getUiSettings().setAllGesturesEnabled(true);
+            getMap().getUiSettings().setMapToolbarEnabled(true);
+            getMap().getUiSettings().setCompassEnabled(true);
+            CameraUpdate center = CameraUpdateFactory.newLatLng(new LatLng(4.635287, -74.096603));
+            CameraUpdate zoom = CameraUpdateFactory.zoomTo(17);
+            getMap().moveCamera(center);
+            getMap().animateCamera(zoom);
+            getMap().setOnInfoWindowClickListener(MyOnInfoWindowClickListener);
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         googleMap.setOnCameraMoveListener(this);
         googleMap.setOnCameraMoveCanceledListener(this);
         googleMap.setOnCameraIdleListener(this);
-        startClustering();
+        //startClustering();
     }
 
 
@@ -298,7 +311,7 @@ public class Mod_geo extends AppCompatActivity implements
 
                 JSONArray array = json.getJSONArray("features");
 
-                for (int i = 0 ;  i < 500; i++ ){
+                for (int i = 0 ;  i < 100; i++ ){
                     JSONObject object = array.getJSONObject(i);
 
                     JSONObject  geometria = object.getJSONObject("geometry");

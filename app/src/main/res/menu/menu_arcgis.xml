@@ -1,0 +1,25 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools" tools:context=".Mod_geo">
+
+    <item android:id="@+id/streets" android:title="Mapa de Calles"
+        android:orderInCategory="100" app:showAsAction="never" />
+
+    <item android:id="@+id/topo" android:title="Topográfico"
+        android:orderInCategory="100" app:showAsAction="never" />
+
+    <item android:id="@+id/gray" android:title="Gray"
+        android:orderInCategory="100" app:showAsAction="never" />
+
+    <item android:id="@+id/ocean" android:title="Oceanos"
+        android:orderInCategory="100" app:showAsAction="never" />
+
+    <item android:id="@+id/OSMaps" android:title="Open Street Maps"
+        android:orderInCategory="100" app:showAsAction="never" />
+
+    <item android:id="@+id/satellite" android:title="Satellite"
+        android:orderInCategory="100" app:showAsAction="never" />
+
+    <item android:id="@+id/openwms" android:title="Agregar WMS"
+        android:orderInCategory="100" app:showAsAction="never" />
+</menu>

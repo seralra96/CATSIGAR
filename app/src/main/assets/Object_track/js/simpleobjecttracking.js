@@ -152,6 +152,11 @@ var World = {
             },
             rotate: {
                 x: -90
+            },
+            onClick: function() {
+
+                AR.context.openInBrowser("file:///android_asset/info_preds/index.html");
+
             }
         });
     },

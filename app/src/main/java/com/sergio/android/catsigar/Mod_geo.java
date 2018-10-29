@@ -96,6 +96,10 @@ public class Mod_geo extends AppCompatActivity implements
             case R.id.terrain:
                 getMap().setMapType(GoogleMap.MAP_TYPE_TERRAIN);
                 break;
+            case R.id.tutorial:
+                Intent intent = new Intent(Mod_geo.this, IntroActivity.class);
+                startActivity(intent);
+                break;
         }
 
         return super.onOptionsItemSelected(item);

@@ -51,7 +51,7 @@ public class IntroActivity extends OnboarderActivity implements OnboarderPageCha
 
         Intent intent = new Intent(IntroActivity.this, Mod_geo.class);
         startActivity(intent);
-
+        finish();
     }
 
     @Override
@@ -63,5 +63,6 @@ public class IntroActivity extends OnboarderActivity implements OnboarderPageCha
     public void onSkipButtonPressed() {
         Intent intent = new Intent(IntroActivity.this, Mod_geo.class);
         startActivity(intent);
+        finish();
     }
 }

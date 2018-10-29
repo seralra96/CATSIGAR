@@ -99,6 +99,7 @@ public class Mod_geo extends AppCompatActivity implements
             case R.id.tutorial:
                 Intent intent = new Intent(Mod_geo.this, IntroActivity.class);
                 startActivity(intent);
+                finish();
                 break;
         }
 

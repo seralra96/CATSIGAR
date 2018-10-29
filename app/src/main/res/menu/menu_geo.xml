@@ -13,4 +13,7 @@
 
     <item android:id="@+id/terrain" android:title="Google Terrain"
         android:orderInCategory="100" app:showAsAction="never" />
+
+    <item android:id="@+id/tutorial" android:title="Tutorial de uso"
+        android:orderInCategory="100" app:showAsAction="never" />
 </menu>

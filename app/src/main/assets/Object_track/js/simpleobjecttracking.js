@@ -10,6 +10,7 @@ var World = {
             sc: 0.00825,
             url: "assets/piramide.wt3",
             wtourl: "assets/piramide.wto",
+            infourl: "https://es.wikipedia.org/wiki/Teotihuac%C3%A1n",
             drawable: null
         },
         {
@@ -20,6 +21,7 @@ var World = {
             sc: 0.00385,
             url: "assets/006208032020.wt3",
             wtourl: "assets/006208032020.wto",
+            infourl: "file:///android_asset/info_preds/006208032020.html",
             drawable: null
         },
         {
@@ -30,6 +32,7 @@ var World = {
             sc: 0.00785,
             url: "assets/006208032021.wt3",
             wtourl: "assets/006208032021.wto",
+            infourl: "file:///android_asset/info_preds/006208032021.html",
             drawable: null
         }
 
@@ -109,7 +112,7 @@ var World = {
               for (var i=0; i < World.construcciones.length; i++){
                             if (World.construcciones[i].id === GET.codpre){
                                 construccion = World.construcciones[i];
-                                construccion.drawable = World.getMarker(construccion.x, construccion.y, construccion.z, construccion.url, construccion.sc);
+                                construccion.drawable = World.getMarker(construccion.x, construccion.y, construccion.z, construccion.url, construccion.sc, construccion.infourl);
                                 World.drawables.push(construccion.drawable);
                                 World.createTracker(construccion.wtourl);
                                 break;
@@ -119,7 +122,7 @@ var World = {
             alert("La construccion "+GET.codpre+ " no existe, pero puedes ver información de la pirámide de muestra");
             console.log("La construccion "+GET.codpre+ " no existe y se mostrará la pirámide");
             construccion = World.construcciones[0];
-            construccion.drawable = World.getMarker(construccion.x, construccion.y, construccion.z, construccion.url, construccion.sc);
+            construccion.drawable = World.getMarker(construccion.x, construccion.y, construccion.z, construccion.url, construccion.sc, construccion.infourl);
             World.drawables.push(construccion.drawable);
             World.createTracker(construccion.wtourl);
         }
@@ -135,7 +138,7 @@ var World = {
 
     },
 
-    getMarker: function getMarkerFn(positionX, positionY, positionZ, model, coneScale) {
+    getMarker: function getMarkerFn(positionX, positionY, positionZ, model, coneScale, infourl) {
         //var coneScale = 0.0170 * this.firetruckLength;
         //var positionY = -2.0 + World.firetruckCenter.y;
         return new AR.Model(model, {
@@ -155,7 +158,7 @@ var World = {
             },
             onClick: function() {
 
-                AR.context.openInBrowser("file:///android_asset/info_preds/index.html");
+                AR.context.openInBrowser(infourl);
 
             }
         });

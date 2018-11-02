@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="White">#FFFFFFFF</color>
+    <color name="P2">#A9D0F5</color>
+    <color name="Gray">#FF808080</color>
+    <color name="Black">#FF000000</color>
+    <color name="P3">#A4C9DB</color>
+    <color name="P4">#A4DBCF</color>
+    <color name="P5">#A4DBB2</color>
+    <color name="P6">#BBDBA4</color>
+    <color name="P7">#D1DBA4</color>
+    <color name="P8">#DBCAA4</color>
+    <color name="P9">#DBB3A4</color>
+    <color name="P2_t">#4A4F65</color>
+    <color name="P3_t">#4A6465</color>
+    <color name="P4_t">#4A6553</color>
+    <color name="P5_t">#4F654A</color>
+    <color name="P6_t">#61654A</color>
+    <color name="P7_t">#65624A</color>
+    <color name="P8_t">#65574A</color>
+    <color name="P9_t">#654F4A</color>
+</resources>

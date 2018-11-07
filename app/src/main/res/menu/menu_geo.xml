@@ -2,18 +2,30 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools" tools:context=".Mod_geo">
 
-    <item android:id="@+id/hybrid" android:title="Google Hybrid"
-        android:orderInCategory="100" app:showAsAction="never" />
+    <group
+        android:id="@+id/menu_top">
 
-    <item android:id="@+id/satellite" android:title="Google Satellite"
-        android:orderInCategory="100" app:showAsAction="never" />
+        <item android:id="@+id/hybrid" android:title="Google Hybrid"
+            android:orderInCategory="100" app:showAsAction="never" />
 
-    <item android:id="@+id/maps" android:title="Google Maps"
-        android:orderInCategory="100" app:showAsAction="never" />
+        <item android:id="@+id/satellite" android:title="Google Satellite"
+            android:orderInCategory="100" app:showAsAction="never" />
 
-    <item android:id="@+id/terrain" android:title="Google Terrain"
-        android:orderInCategory="100" app:showAsAction="never" />
+        <item android:id="@+id/maps" android:title="Google Maps"
+            android:orderInCategory="100" app:showAsAction="never" />
 
-    <item android:id="@+id/tutorial" android:title="Tutorial de uso"
-        android:orderInCategory="100" app:showAsAction="never" />
+        <item android:id="@+id/terrain" android:title="Google Terrain"
+            android:orderInCategory="100" app:showAsAction="never" />
+    </group>
+
+    <group
+        android:id="@+id/menu_bottom">
+
+        <item android:id="@+id/tutorial" android:title="Tutorial de uso"
+            android:orderInCategory="100" app:showAsAction="never" />
+
+        <item android:id="@+id/acercade" android:title="Acerca de"
+            android:orderInCategory="100" app:showAsAction="never" />
+
+    </group>
 </menu>

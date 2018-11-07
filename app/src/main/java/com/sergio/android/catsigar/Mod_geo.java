@@ -78,6 +78,7 @@ public class Mod_geo extends AppCompatActivity implements
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_geo, menu);
+
         return true;
     }
 
@@ -176,13 +177,13 @@ public class Mod_geo extends AppCompatActivity implements
             = new GoogleMap.OnInfoWindowClickListener(){
         @Override
         public void onInfoWindowClick(Marker marker) {
-            Toast.makeText(Mod_geo.this,
+            /*Toast.makeText(Mod_geo.this,
                     "onInfoWindowClick():\n" +
                             marker.getId() + "\n" +
                             marker.getPosition().longitude + "\n" +
                             marker.getSnippet(),
 
-                    Toast.LENGTH_LONG).show();
+                    Toast.LENGTH_LONG).show();*/
             String idLote_int = marker.getSnippet();
             Intent intent = new Intent(Mod_geo.this,Mod_ar.class);
             intent.putExtra("idLote_int",idLote_int);
@@ -261,9 +262,16 @@ public class Mod_geo extends AppCompatActivity implements
     public void onCameraMove() {
         double lat = getMap().getCameraPosition().target.latitude;
         double lng = getMap().getCameraPosition().target.longitude;
+        float zoom = getMap().getCameraPosition().zoom;
 
-        Log.d("Tag", "lat: "+lat+" lng: "+lng);
+        Log.d("Tag", "lat: "+lat+" lng: "+lng + " Zoom: " + zoom);
         Log.d("Tag", getMap().getProjection().getVisibleRegion().latLngBounds.toString());
+
+        if (zoom <= 19){
+            btn_wfs.setEnabled(false);
+        }else{
+            btn_wfs.setEnabled(true);
+        }
     }
 
     @Override

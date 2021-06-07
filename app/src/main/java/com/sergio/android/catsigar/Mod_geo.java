@@ -1,17 +1,23 @@
 package com.sergio.android.catsigar;
 
 import android.Manifest;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Html;
+import android.text.method.LinkMovementMethod;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 
@@ -107,6 +113,9 @@ public class Mod_geo extends AppCompatActivity implements
         return super.onOptionsItemSelected(item);
     }
 
+
+
+
     protected void verifyPermissions() {
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
@@ -146,7 +155,7 @@ public class Mod_geo extends AppCompatActivity implements
                 lnge = getMap().getProjection().getVisibleRegion().latLngBounds.northeast.longitude;
 
                 Log.d("Tag", latw +","+ lngw );
-                mGeoJsonUrl = "https://ide.proadmintierra.info/geoserver/catsigar/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=catsigar:pdom2&srsName=EPSG:4326&bbox="+latw +","+ lngw  +","+ late  +","+ lnge+ ",urn:ogc:def:crs:EPSG:4326&outputFormat=application%2Fjson";
+                mGeoJsonUrl = "https://ideat.proadmintierra.info/geoserver/catsigar/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=catsigar:pdom2&srsName=EPSG:4326&bbox="+latw +","+ lngw  +","+ late  +","+ lnge+ ",urn:ogc:def:crs:EPSG:4326&outputFormat=application%2Fjson";
                 Toast.makeText(getApplicationContext(), mGeoJsonUrl, Toast.LENGTH_LONG).show();
                 startClustering(mGeoJsonUrl);
             }
